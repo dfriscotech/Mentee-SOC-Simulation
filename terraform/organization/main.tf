@@ -48,6 +48,13 @@ output "organization_accounts" {
   ]
 }
 
+locals {
+  organization_accounts_by_id = {
+    for account in data.aws_organizations_organization.current.accounts :
+    account.id => account
+  }
+}
+
 resource "aws_organizations_organizational_unit" "security" {
   name      = "Security"
   parent_id = data.aws_organizations_organization.current.roots[0].id
@@ -64,6 +71,56 @@ resource "aws_organizations_organizational_unit" "lab" {
   tags = {
     Environment = "Lab"
     Owner       = "Devante"
+  }
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "aws_organizations_account" "s3_public_access" {
+  name      = "soc-lab-s3-public-access"
+  email     = local.organization_accounts_by_id["416716458645"].email
+  parent_id = aws_organizations_organizational_unit.lab.id
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "aws_organizations_account" "s3_anomalous_access" {
+  name      = "soc-lab-s3-anomalous-access"
+  email     = local.organization_accounts_by_id["630256878267"].email
+  parent_id = aws_organizations_organizational_unit.lab.id
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "aws_organizations_account" "ssh_bruteforce" {
+  name      = "soc-lab-ssh-bruteforce"
+  email     = local.organization_accounts_by_id["114128048968"].email
+  parent_id = aws_organizations_organizational_unit.lab.id
+
+  tags = {
+    Project  = "mentee-soc-simulation"
+    Scenario = "ssh-bruteforce"
+  }
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
+
+resource "aws_organizations_account" "security_logging" {
+  name      = "soc-security-logging"
+  email     = local.organization_accounts_by_id["528847740588"].email
+  parent_id = aws_organizations_organizational_unit.security.id
+
+  tags = {
+    Project = "mentee-soc-simulation"
+    Purpose = "security-logging"
   }
 
   lifecycle {
