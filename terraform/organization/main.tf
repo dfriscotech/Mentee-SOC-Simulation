@@ -127,3 +127,12 @@ resource "aws_organizations_account" "security_logging" {
     prevent_destroy = true
   }
 }
+
+resource "aws_guardduty_organization_admin_account" "security_logging" {
+  admin_account_id = "528847740588"
+  region           = "us-east-2"
+
+  lifecycle {
+    prevent_destroy = true
+  }
+}
